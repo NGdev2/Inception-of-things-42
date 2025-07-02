@@ -1,23 +1,51 @@
-Vagrant.configure("2") do |config|
-  config.vm.define "fteganS" do |server|
-    server.vm.box = "ubuntu/bionic64"
-    server.vm.hostname = "fteganS"
-    server.vm.network "private_network", ip: "192.168.56.110"
-    server.vm.provider "virtualbox" do |vb|
-      vb.memory = 2048
-      vb.cpus = 2
-    end
-    server.vm.provision "shell", path: "scripts/install_k3s_server.sh"
-   end
+VAGRANT_BOX = "ubuntu/bionic64"
+MEMORY = 1024
+CPUS = 1
+NETWORK_PREFIX = "192.168.56"
 
-  config.vm.define "fteganSW" do |worker|
-    worker.vm.box = "ubuntu/bionic64"
-    worker.vm.hostname = "fteganSW"
-    worker.vm.network "private_network", ip: "192.168.56.111"
-    worker.vm.provider "virtualbox" do |vb|
-      vb.memory = 2048
-      vb.cpus = 2
-    end
-    worker.vm.provision "shell", path: "scripts/install_k3s_agent.sh"
+Vagrant.configure("2") do |config|
+  config.vm.box = VAGRANT_BOX
+  config.vm.boot_timeout = 600
+  config.vm.box_check_update = true
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = MEMORY
+    vb.cpus = CPUS
+    vb.linked_clone = true
   end
+
+  def define_node(config, hostname, ip, script_path, with_token_trigger: false)
+    config.vm.define hostname do |node|
+      node.vm.hostname = hostname
+      node.vm.network "private_network", ip: ip
+
+      node.vm.provider "virtualbox" do |vb|
+        vb.name = hostname
+      end
+
+      # trigger to wait for token.env file for worker nodes
+      if with_token_trigger
+        node.trigger.before :provision do |trigger|
+          trigger.info = "Waiting for token.env to be available from the server..."
+          trigger.run_remote = {
+            inline: <<-SHELL
+              while [ ! -s /vagrant/token.env ]; do
+                echo "token.env not found yet, sleeping..."
+                sleep 2
+              done
+              echo "token.env found."
+            SHELL
+          }
+        end
+      end
+
+      node.vm.provision "shell", path: script_path
+    end
+  end
+
+ # SERVER NODE
+  define_node(config, "fteganS", "#{NETWORK_PREFIX}.110", "scripts/server.sh")
+
+  # WORKER NODE
+  define_node(config, "fteganSW", "#{NETWORK_PREFIX}.111", "scripts/worker.sh", with_token_trigger: true)
 end
