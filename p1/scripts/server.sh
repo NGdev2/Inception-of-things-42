@@ -26,10 +26,16 @@ fi
 # Copying the Vagrant token to the mounted folder, which will be necessary to install the worker
 # https://docs.k3s.io/quick-start
 
-if sudo cat /var/lib/rancher/k3s/server/token >> /vagrant/token.env; then
-    echo -e "${GREEN}TOKEN SUCCESSFULLY SAVED${RESET}"
+# Wait until /vagrant is properly mounted
+while [ ! -d /vagrant ]; do
+  echo "Waiting for /vagrant to be mounted..."
+  sleep 1
+done
+
+if sudo cat /var/lib/rancher/k3s/server/token > /vagrant/token.env; then
+  echo -e "${GREEN}TOKEN SUCCESSFULLY SAVED${RESET}"
 else
-    echo -e "${RED}TOKEN SAVING FAILED${RESET}"
+  echo -e "${RED}TOKEN SAVING FAILED${RESET}"
 fi
 
 # for test purposes, we copy the kubeconfig file to the mounted folder
