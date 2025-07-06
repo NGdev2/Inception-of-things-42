@@ -22,6 +22,10 @@ kubectl apply -f argocd-app.yaml
 echo -e "${GREEN}Logging into Argo CD CLI...${RESET}"
 argocd login localhost:8082 \
   --username admin \
-  --password $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+  --password $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d) \
+  --insecure
+
+echo -e "${GREEN}To access app, run:${RESET}"
+echo -e "${GREEN}kubectl port-forward svc/ftegan-app -n dev 8888:80${RESET}"
 
 echo -e "${GREEN}Argo CD setup complete! You can now run 'argocd app list' to view your applications.${RESET}"
