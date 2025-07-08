@@ -35,7 +35,7 @@ Configuration is done through a **Vagrantfile** : it is a **configuration file**
 
 ### About K3s
 
-K3s is a lightweight, certified Kubernetes distribution developed by Rancher. It's optimized for resource-constrained environments, making it ideal for development and testing.
+K3s is a lightweight, certified Kubernetes distribution developed by Rancher.
 
 There are two types of nodes in K3s:
 
