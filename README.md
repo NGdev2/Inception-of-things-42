@@ -1,6 +1,6 @@
 ## About the project
 
-**Inception of Things** is a **42Network** project introduces basic system administration using **Vagrant** for **VM automation** and **Kubernetes** for managing containers.
+**Inception of Things** is a **42Network** project which introduces basic system administration using **Vagrant** for **VM automation** and **Kubernetes** for managing containers.
 
 ## Getting started
 
@@ -81,7 +81,8 @@ Unlike the standard Kubernetes control plane, a K3s Server node can run standalo
 
 ## Resources
 
-- **Kubernetes documentation** : https://kubernetes.io/docs/home/
+- **Kubernetes documentation :** https://kubernetes.io/docs/home/
 - **Kubectl command line tool :** https://kubernetes.io/docs/reference/kubectl/
-- **K3s documentation** : https://docs.k3s.io/
+- **K3s documentation :** https://docs.k3s.io/
 - **K3d documentation :** https://k3d.io/stable/
+- **Argo CD documentation :** https://argo-cd.readthedocs.io/en/stable/

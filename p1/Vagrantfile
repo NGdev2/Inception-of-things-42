@@ -47,5 +47,5 @@ Vagrant.configure("2") do |config|
   define_node(config, "fteganS", "#{NETWORK_PREFIX}.110", "scripts/server.sh")
 
   # WORKER NODE
-  define_node(config, "fteganSW", "#{NETWORK_PREFIX}.111", "scripts/worker.sh", with_token_trigger: true)
+  define_node(config, "fteganSW", "#{NETWORK_PREFIX}.111", "scripts/serverWorker.sh", with_token_trigger: true)
 end
