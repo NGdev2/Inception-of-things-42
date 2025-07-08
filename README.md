@@ -17,7 +17,8 @@ Each part includes:
 - its own `Vagrantfile` to set up a dedicated virtual machine
 - a specific `README.md` explaining how to use the corresponding module
 
-Once you've followed the setup instructions for a given part, you can use `kubectl` commands to interact with the pods, as detailed in the documentation.
+Once you've followed the setup instructions for a given part, you can use `kubectl` commands to communicate with the cluster, as detailed in the documentation :
+**Kubectl command line tool** : https://kubernetes.io/docs/reference/kubectl/
 
 ## About Kubernetes
 
@@ -61,3 +62,26 @@ Unlike the standard Kubernetes control plane, a K3s Server node can run standalo
 | --- | --- |
 | **kube-proxy** | Maintains network rules |
 | **containerd** | Container runtime |
+
+## II. K3s and three simple applications
+
+### About K3d
+
+**K3d** is a lightweight wrapper to run **K3s** in **Docker**. It is a community-driven project not an official Rancher product.
+
+## III. K3d and Argo CD
+
+### About Continuous integration
+
+
+
+### About Argo CD
+
+
+
+## Resources
+
+- **Kubernetes documentation** : https://kubernetes.io/docs/home/
+- **Kubectl command line tool :** https://kubernetes.io/docs/reference/kubectl/
+- **K3s documentation** : https://docs.k3s.io/
+- **K3d documentation :** https://k3d.io/stable/
