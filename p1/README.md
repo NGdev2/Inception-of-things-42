@@ -1,3 +1,39 @@
+## Usage
+
+```bash
+
+```
+
+## Vagrantfile
+
+The `Vagrantfile` uses the `ubuntu/bionic64` Vagrant box which is an official Ubuntu 18.04 LTS image for 64-bit systems. This version is selected because it is stable, lightweight, and compatible with K3s. It does not include a graphical interface, which makes it faster to boot and consume fewer system resources. The box is also fully configured for Vagrant: SSH access is preconfigured and the system includes the necessary settings to work seamlessly with Vagrant's provisioning and networking features.
+
+```
+VAGRANT_BOX = "ubuntu/bionic64"
+```
+
+As the subject requires : *“You will set up your Vagrantfile according to modern practices”*, we set the configuration version 2, which is the standard and modern syntax supported by current versions of Vagrant.
+
+```
+Vagrant.configure("2") do |config|
+```
+
+After the initial configuration, a helper function called `define_node` is declared. Its purpose is to define and configure a virtual machine based on the provisioning script passed as an argument. It is either `server.sh` for the K3s server or `serverWorker.sh` for a K3s agent.
+
+The function accepts parameters such as the VM's hostname, IP address, and the path to the provisioning script. Additionally, if the `with_token_trigger` flag is set to `true`, the function sets up a trigger that causes the VM to wait until the file `/vagrant/token.env` is present and non-empty before running the script. This ensures that the agent nodes only attempt to join the cluster after the server has generated the necessary token.
+
+This mechanism is specifically used for provisioning the K3s agent node which needs to join an existing K3s server using the token.
+
+Finally, the Vagrantfile calls `define_function` to create the **K3s server node** and **one K3s agent node**. They are named according to the subject requirements : adding S and SW to one of the teammates' login names.
+
+```
+# SERVER NODE
+define_node(config, "fteganS", "#{NETWORK_PREFIX}.110", "scripts/server.sh")
+ 
+# WORKER NODE
+define_node(config, "fteganSW", "#{NETWORK_PREFIX}.111", "scripts/serverWorker.sh" with_token_trigger: true)
+```
+
 ## Server.sh
 
 The [`server.sh`](http://server.sh) is a Bash script that creates a **K3s server node** in a **K3s cluster** intended to be used with **Vagrant.** It is run automatically via the **`Vagrantfile` .**
@@ -57,4 +93,5 @@ sudo rm /vagrant/token.env
 ## Resources
 
 - **K3s Quick-start guide :** https://docs.k3s.io/quick-start
-- **K3s Documentation** : https://docs.k3s.io/
+- **K3s Documentation :** https://docs.k3s.io/
+- **Vagrant Documentation :** https://developer.hashicorp.com/vagrant/docs/vagrantfile
