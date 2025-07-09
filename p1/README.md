@@ -28,7 +28,31 @@ Then, the scripts waits for the `/vagrant` folder to be mounted. If not, it wait
 
 Once `/vagrant` is available,  the script copies the K3s **cluster token** to `/vagrant/token.env.` The **K3s token** is a secret string used by worker nodes to securely **join the cluster**. It is generated automatically on the server and must be shared with all joining agents (workers).
 
-Finally, the scripts changes the ownershop of the K3s Kubeconfig file.
+Finally, the script changes the ownershop of the K3s Kubeconfig file.
+
+## serverWorker.sh
+
+The [`serverWorker.sh`](http://server.sh) is a Bash script used to configure a **K3s agent node** that connects to a **K3s server node** as part of a **K3s cluster.**  
+
+The script begins by updating the package list and installing `curl` .
+
+Then, it checks for the presence of a token file (`/vagrant/token`). This file must exist and contain the server node's join token. If the file is missing, the script exits with an error:
+
+```bash
+if [ ! -f /vagrant/token.env ]; then
+    echo -e "${RED}Token file not found.${RESET}"
+    exit 1
+fi
+```
+
+Then, it downloads the official **K3s installation script**  https://get.k3s.io/ . The scripts modify environment variables in order to fit the subject requirement just like the `server.sh` script. Then it is executed.
+
+Finally, for security, the token file is deleted after use to prevent unauthorized access to the K3s server:
+
+```bash
+sudo rm /vagrant/token.env
+```
+
 
 ## Resources
 
