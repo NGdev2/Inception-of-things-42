@@ -17,10 +17,8 @@ This project sets up a **K3d/K3s Kubernetes cluster**, deploys **Argo CD**, and 
 ./argocd_init.sh
 ```
 
-### 3. Port Forward Argo CD Web UI
-```bash
-kubectl port-forward svc/argocd-server -n argocd 8082:443
-```
+### 3. Open Argocd. generate password for it
+
 Then open: https://localhost:8082  
 Default user: `admin`  
 Get password:
@@ -88,3 +86,70 @@ This will:
 - Remove dangling containers
 
 ---
+
+
+Explanation
+---
+bash ./setup_k3d_cluster.sh
+bash ./argocd_init.sh
+---
+
+if (problem=ports, kubeconfig or version of packages) -> bash ./cleanup.sh -> reinitialize
+it launchs app by given in repository url of argocd-app.yaml. for accessing from Host PC, we need to launch portforwarding
+to understand which port we need to ping we can use that command
+kubectl describe svc ftegan-app -n dev
+we will see "port" 80. it means that our ftegan-app expose that port for communicate with it
+
+command for port forwarding
+---
+kubectl port-forward svc/ftegan-app -n dev 8088:80
+---
+now we can see our app by url 127.0.0.1:8088
+
+
+host machine expose port 8088 -> service of deployment app expose port 80 -> deployment ftegan-app expose port 8888
+
+
+Service determine who can connect to deployment by 2 criteries: port (80) and selector that should match to pod label:
+selector:
+  app: ftegan-app (file service.yaml)
+
+Selector create filter for access permission
+
+deployment determine labels that pods and containers will inherit
+spec:
+  template:
+    metadata:
+      labels:
+        app: ftegan-app 
+(deployment.yaml)
+
+pods created by deployment will have app=ftegan-app
+example:
+kubectl get pods -n dev --show-labels
+NAME                          READY   STATUS    RESTARTS      AGE    LABELS
+ftegan-app-7b6d6fd56f-btwrl   1/1     Running   7 (68m ago)   4d4h   app=ftegan-app,pod-template-hash=7b6d6fd56f
+
+so services are created to expose ports and provide stable access to pods
+deployments is an object that creates and manages pods, maintain desired number of replicas, verify their status, restarts them if needs, updates pods (and delete outdated) or rolled out
+
+- - receive password of argocd
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+---
+
+---
+enter to argocd https://localhost:8082/ 
+with login: admin and password from previous command
+---
+
+---
+enter to app to http://localhost:8088/ or use curl curl http://localhost:8088/
+
+for testing continuous integration, push v2 to github
+https://github.com/NGdev2/ftegan
+
+(change wil42/playground:v1 to wil42/playground:v2)
+
+check what happens with object of our kubernetes (launch command with shor delay - 1-3 seconds. look for replicas, deployments and pods)
+kubectl get all -n dev
+
