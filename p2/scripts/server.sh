@@ -9,11 +9,6 @@ RESET="\033[0m"
 sudo apt-get update -y && sudo apt-get install -y curl
 echo -e "${GREEN}APT UPDATE AND INSTALLATION OF CURL SUCCEEDED${RESET}"
 
-kubectl get pods -A | grep traefik
-echo -e "${GREEN}APT UPDATE AND INSTALLATION OF CURL SUCCEEDED${RESET}"
-
-
-
 # Install K3s
 # Setting environment variables for K3s installation, giving the node an IP address and a TLS SAN.
 # giving the kubeconfig (/etc/rancher/k3s/k3s.yaml) file permissions to 644.
