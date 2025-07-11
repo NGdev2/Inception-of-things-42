@@ -1,3 +1,11 @@
+## Table of content
+
+- [Usage](#usage)
+- [Vagrantfile explanation](#vagrantfile)
+- [server.sh explanation](#serversh)
+- [serverWorker.sh explanation](#serverworkersh)
+- [Resources](#resources)
+
 ## Usage
 
 To **launch the virtual machine** using **Vagrant**, run : 
