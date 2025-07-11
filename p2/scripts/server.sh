@@ -31,11 +31,5 @@ while [ ! -d /vagrant ]; do
   sleep 1
 done
 
-if sudo cat /var/lib/rancher/k3s/server/token > /vagrant/token.env; then
-  echo -e "${GREEN}TOKEN SUCCESSFULLY SAVED${RESET}"
-else
-  echo -e "${RED}TOKEN SAVING FAILED${RESET}"
-fi
-
 # for test purposes, we copy the kubeconfig file to the mounted folder
 sudo chown vagrant:vagrant /etc/rancher/k3s/k3s.yaml
