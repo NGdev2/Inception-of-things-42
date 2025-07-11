@@ -33,3 +33,4 @@ For the deployment, we use the latest version of the container image created by 
 - **Kubernetes - Cluster networking :** https://kubernetes.io/docs/concepts/cluster-administration/networking/
 - **Kubernetes - Ingress documentation :** https://kubernetes.io/docs/concepts/services-networking/ingress/
 - **Kubernetes - Services, load balancing and networking :** https://kubernetes.io/docs/concepts/services-networking/
+- **K3s cluster using vagrant :** https://medium.com/@dharsannanantharaman/create-a-high-availabilty-lightweight-kubernetes-k3s-cluster-using-vagrant-822a1e025855
