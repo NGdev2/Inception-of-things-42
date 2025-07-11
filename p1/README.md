@@ -197,3 +197,4 @@ sudo rm /vagrant/token.env
 - **K3s Quick-start guide :** https://docs.k3s.io/quick-start
 - **K3s Documentation :** https://docs.k3s.io/
 - **Vagrant Documentation :** https://developer.hashicorp.com/vagrant/docs/vagrantfile
+- **Discover Vagrant Boxes :** https://portal.cloud.hashicorp.com/vagrant/discover?product_intent=vagrant
