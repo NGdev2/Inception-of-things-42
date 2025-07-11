@@ -8,6 +8,22 @@
 
 ## Usage
 
+To **launch the virtual machine** using **Vagrant**, run : 
+
+```bash
+cd p2
+
+# Start the Vagrant environment
+vagrant up
+```
+
+**You can then SSH into the VM :** 
+
+```bash
+# Access the Kubernetes server VM
+vagrant ssh lduheronS
+```
+
 ## Overview
 
 The second part of the project requires us to deploy **3 web applications of our choice** on our **K3s instance**.
@@ -26,7 +42,11 @@ For the deployment, we use the latest version of the container image created by 
 
 ## Vagrantfile
 
+This Vagrantfile declares a **single-node K3s cluster**. It uses the same setup options as the `p1/Vagrantfile`, described in `p1/README.md`.
+
 ## Ingress
+
+Ingress is an API object that manages external access to the services in a cluster, typically HTTP.
 
 ## Resources
 
