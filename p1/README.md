@@ -1,5 +1,4 @@
-## Table of content
-
+## Table of Contents
 - [Usage](#usage)
 - [Vagrantfile explanation](#vagrantfile)
 - [server.sh explanation](#serversh)
