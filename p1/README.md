@@ -1,15 +1,110 @@
 ## Usage
 
-```bash
+To **launch the virtual machine** using **Vagrant**, run : 
 
+```bash
+cd p1
+
+# Start the Vagrant environment
+vagrant up
+```
+
+**You can then SSH into the VMs :** 
+
+```bash
+# Access the Kubernetes server VM
+vagrant ssh fteganS
+
+# Access the Kubernetes server VM
+vagrant ssh fteganSW
+```
+
+Then we can use the `kubectl` commands to **interact with the Kubernetes cluster from the server VM.** Only the **server node** will have access to the full `kubectl` command set, including control over the Kubernetes cluster. The worker node acts as a client with limited visibility.
+
+```bash
+# Shows all resources (pods, services, etc.) in the default namespace
+kubectl get all
+
+# Shows all resources in all namespaces
+kubectl get all --all-namespaces
+
+# Describe a specific Kubernetes resource
+kubectl describe <type> <name>
+# OR
+kubectl describe <type>/<name>
+
+# Examples
+kubectl describe pod kubernetes
+kubectl describe pod kubernetes -o wide   # More detailed output
+kubectl describe pod kubernetes -o yaml   # Output in YAML format
+```
+
+**For networking and system info :**
+
+```bash
+# Display network interfaces
+ifconfig
+ip show <exact interfcace> 
+```
+
+**To edit and debug :** 
+
+```bash
+# List active containers
+docker ps 
+
+# Edit a resource's YAML definition directly
+kubectl edit  pod <podname>
+```
+
+**You can create pods imperatively or declaratively :**
+
+- **Imperative** (direct from command line):
+    
+    ```bash
+    kubectl run <podname> --image=nginx:latest
+    ```
+    
+- **Declarative** (from a YAML file)
+    
+    ```bash
+    kubectl apply -f pod.yaml
+    ```
+    
+
+**To stop the Vagrant environment :**
+
+```bash
+vagrant halt
+vagrant down
 ```
 
 ## Vagrantfile
+
+**Overview**
+
+To optimize and simplify the structure of the `Vagrantfile`, we declare the core configuration (`VAGRANT_BOX`, `MEMORY`, `CPUS`, etc.) at the top of the file. Instead of repeating similar configuration blocks for each virtual machine, we use a custom `define_node` function that takes the shared `config` object as an argument. This allows us to create and provision both the **server** and **worker** nodes in a modular and reusable way, while keeping the code clean and maintainable.
+
+Additionally, for the worker node, we implement a **trigger** mechanism that waits for the `token.env` file to be created by the server before proceeding with provisioning. This ensures proper synchronization between the cluster components during setup.
+
+**Detailed explanation of the script**
 
 The `Vagrantfile` uses the `ubuntu/bionic64` Vagrant box which is an official Ubuntu 18.04 LTS image for 64-bit systems. This version is selected because it is stable, lightweight, and compatible with K3s. It does not include a graphical interface, which makes it faster to boot and consume fewer system resources. The box is also fully configured for Vagrant: SSH access is preconfigured and the system includes the necessary settings to work seamlessly with Vagrant's provisioning and networking features.
 
 ```
 VAGRANT_BOX = "ubuntu/bionic64"
+```
+
+We configure a **boot timeout** that is twice as long as the usual time required to create the Vagrant machine, to ensure it doesn't fail on slower systems:
+
+```
+config.vm.boot_timeout = 600
+```
+
+We also enable the box_check_update option instead of hardcoding a specific box version. This allows the code to remain compatible with future updates to the Vagrant box:
+
+```
+config.vm.box_check_update = true
 ```
 
 As the subject requires : *“You will set up your Vagrantfile according to modern practices”*, we set the configuration version 2, which is the standard and modern syntax supported by current versions of Vagrant.
@@ -44,7 +139,7 @@ The script begins by updating the package list and installing `curl` which is ne
 
 `--tls-san serverS` : adds serverS as Subject Alternative Name in the TLS certificate. A **Subject Alternative Name** allows the TLS certificate to be valid for multiple DNS names or IPs. Without it, clients trying to access the API server using an alias (like `serverS`) would get a certificate error.
 
-`K3S_KUBECONFIG_MODE="644"`: Sets read permissions on the kubeconfig file so that non-root users (or automated tools) can access it.
+`K3S_KUBECONFIG_MODE="644"`: Sets read permissions on the kubeconfig file so that non-root users (or automated tools) can access it. This way, we can now communicate with the containers using the kubectl command.
 
 ```bash
 # Download the installation script
