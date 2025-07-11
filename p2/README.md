@@ -2,7 +2,7 @@
 
 - [Usage](#usage)
 - [Overview](#overview)
-- [Vagrantfile explanation](#vagranfile)
+- [Vagrantfile explanation](#vagrantfile)
 - [Ingress](#ingress)
 - [Resources](#resources)
 
