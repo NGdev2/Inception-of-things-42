@@ -99,7 +99,7 @@ This will:
 
 ## setup_k3d_cluster.sh
 
-This script installs the few environment requirements of the project : Docker, K3d, kubectl from Kubernetes and Argo CD.  As required by the subject, creates two namespaces :
+This script installs the few environment requirements of the project : Docker, K3d, kubectl from Kubernetes and Argo CD. As required by the subject, the script creates two namespaces : one for `Argo CD` and one called `dev` for the application. A **namespace** in Kubernetes is a logical space used to isolate and organize resources (pods, services, etc.) within the same cluster. Here, we isolate Argo Cd from the rest of the cluster.
 
 ```bash
 echo -e "${GREEN}Creating namespaces...${RESET}"
