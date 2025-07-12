@@ -12,10 +12,10 @@ The final mandatory part of the project focuses on deploying an application base
 - [About Argo CD](#about-argo-cd)
 - [About continuous integration](#about-continuous-integration)
 - [Scripts](#scripts)
-- [argocd_init.sh](#argocd_init.sh)
-- [setup_k3d_cluster.sh](#setup_k3d_cluster.sh)
-- [reset_k3d_env.sh](#reset_k3d_env.sh)
-- [argocd-app.yaml](#argocd-app.yaml)
+  - [argocd_init.sh](#argocd_init.sh)
+  - [setup_k3d_cluster.sh](#setup_k3d_cluster.sh)
+  - [reset_k3d_env.sh](#reset_k3d_env.sh)
+  - [argocd-app.yaml](#argocd-app.yaml)
 - [Resources](#resources)
 
 # Usage
@@ -79,6 +79,11 @@ To **clean** everything up and **reset the environment :**
 ./cleanup.sh
 ```
 
+This will:
+- Stop port-forwards
+- Delete the K3d cluster
+- Remove dangling containers
+
 ---
 
 ## 📦 Components & Ports
@@ -115,22 +120,6 @@ Your PC
 | `kubectl port-forward` | `8088:80` | Maps a **local port** (8088) to a **cluster service port** (80).               |
 
 ---
-
-## 🧼 Clean Up
-
-To tear down and reset the environment:
-```bash
-./cleanup.sh
-```
-
-This will:
-- Stop port-forwards
-- Delete the K3d cluster
-- Remove dangling containers
-
----
-
-
 Explanation
 ---
 bash ./setup_k3d_cluster.sh
