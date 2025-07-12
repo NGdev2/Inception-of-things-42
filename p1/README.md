@@ -1,3 +1,7 @@
+# **Overview**
+
+In the first part of the project, the goal is to set up **two virtual machines** using **Vagrant** to create a **K3s cluster** consisting of a **K3s server** and a **K3s agent**.
+
 ## Table of Contents
 - [Usage](#usage)
 - [Vagrantfile explanation](#vagrantfile)
@@ -5,7 +9,7 @@
 - [serverWorker.sh explanation](#serverworkersh)
 - [Resources](#resources)
 
-## Usage
+# Usage
 
 To **launch the virtual machine** using **Vagrant**, run : 
 
@@ -88,13 +92,11 @@ vagrant down
 
 ## Vagrantfile
 
-**Overview**
-
 To optimize and simplify the structure of the `Vagrantfile`, we declare the core configuration (`VAGRANT_BOX`, `MEMORY`, `CPUS`, etc.) at the top of the file. Instead of repeating similar configuration blocks for each virtual machine, we use a custom `define_node` function that takes the shared `config` object as an argument. This allows us to create and provision both the **server** and **worker** nodes in a modular and reusable way, while keeping the code clean and maintainable.
 
 Additionally, for the worker node, we implement a **trigger** mechanism that waits for the `token.env` file to be created by the server before proceeding with provisioning. This ensures proper synchronization between the cluster components during setup.
 
-**Detailed explanation of the script**
+### **Detailed explanation of the script**
 
 The `Vagrantfile` uses the `ubuntu/bionic64` Vagrant box which is an official Ubuntu 18.04 LTS image for 64-bit systems. This version is selected because it is stable, lightweight, and compatible with K3s. It does not include a graphical interface, which makes it faster to boot and consume fewer system resources. The box is also fully configured for Vagrant: SSH access is preconfigured and the system includes the necessary settings to work seamlessly with Vagrant's provisioning and networking features.
 
@@ -192,7 +194,7 @@ sudo rm /vagrant/token.env
 ```
 
 
-## Resources
+# Resources
 
 - **K3s Quick-start guide :** https://docs.k3s.io/quick-start
 - **K3s Documentation :** https://docs.k3s.io/
