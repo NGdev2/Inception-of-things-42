@@ -1,39 +1,82 @@
+# Overview
 
-# 🧠 ftegan-app Kubernetes Playground
+The final mandatory part of the project focuses on deploying an application based on `wil42/playground` using **Docker with K3d, Argo CD, continuous integration and GitOps.** Unlike the previous parts, this one does not rely on Vagrant.
 
-This project sets up a **K3d/K3s Kubernetes cluster**, deploys **Argo CD**, and manages a sample app based on `wil42/playground` using **GitOps**.
+![p3_diagram.png](../image_readme/p3_diagram.png)
 
----
+## Table of Contents
 
-## 🚀 Quick Start
+- [Overview](#overview)
+- [Usage](#usage)
+- [About K3d](#about-k3d)
+- [About Argo CD](#about-argo-cd)
+- [About continuous integration](#about-continuous-integration)
+- [Scripts](#scripts)
+- [argocd_init.sh](#argocd_init.sh)
+- [setup_k3d_cluster.sh](#setup_k3d_cluster.sh)
+- [reset_k3d_env.sh](#reset_k3d_env.sh)
+- [argocd-app.yaml](#argocd-app.yaml)
+- [Resources](#resources)
 
-### 1. Setup Cluster & Install Argo CD
+# Usage
+
+First, the project requires a few **prerequisites** to be installed on the host machine : Docker, K3d, Kubernetes and Argo CD. This dependencies can be set up by running `set_upk3d_cluster.sh` script : 
+
 ```bash
-./setup_k3d_cluster.sh
+# Set up the environment
+bash setup_k3d_cluster.sh
 ```
 
-### 2. Initialize Argo CD and deploy app
+Then, run the Argo CD initialization script : 
+
 ```bash
-./argocd_init.sh
+bash argocd_init.sh
 ```
 
-### 3. Open Argocd. generate password for it
+Once Argo CD is running, access the web interface and generate a password :
 
-Then open: https://localhost:8082  
-Default user: `admin`  
-Get password:
+- open :  [https://localhost:8082](https://localhost:8082/)
+- **Username** : `admin`
+- **Password** : *retrieve it with :*
+
 ```bash
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 ```
 
-### 4. Port Forward App
+To access the deployed application, forward the service port:
+
 ```bash
 kubectl port-forward svc/ftegan-app -n dev 8088:80
 ```
-Then open: http://localhost:8088  
-Or:
+
+Finally, open [http://localhost:8088](http://localhost:8088/) or :
+
 ```bash
 curl http://localhost:8088/
+```
+
+### Testing continuous integration
+
+In order to **test continuous integration**, push a new version (v2) on GitHub repository :
+https://github.com/NGdev2/ftegan
+
+Update the image from `wil42/playground:v1` to `wil42/playground:v2`
+
+Then monitor the Kubernetes resources as Argo CD automatically redeploys the application :
+
+```bash
+# Run this with short delays (1–3 seconds) to observe changes
+kubectl get all -n dev
+```
+
+Watch for updated replicas, deployments, and pods.
+
+### Clean
+
+To **clean** everything up and **reset the environment :**
+
+```bash
+./cleanup.sh
 ```
 
 ---
@@ -133,23 +176,4 @@ ftegan-app-7b6d6fd56f-btwrl   1/1     Running   7 (68m ago)   4d4h   app=ftegan-
 so services are created to expose ports and provide stable access to pods
 deployments is an object that creates and manages pods, maintain desired number of replicas, verify their status, restarts them if needs, updates pods (and delete outdated) or rolled out
 
-- - receive password of argocd
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
----
-
----
-enter to argocd https://localhost:8082/ 
-with login: admin and password from previous command
----
-
----
-enter to app to http://localhost:8088/ or use curl curl http://localhost:8088/
-
-for testing continuous integration, push v2 to github
-https://github.com/NGdev2/ftegan
-
-(change wil42/playground:v1 to wil42/playground:v2)
-
-check what happens with object of our kubernetes (launch command with shor delay - 1-3 seconds. look for replicas, deployments and pods)
-kubectl get all -n dev
 
