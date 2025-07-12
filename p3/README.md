@@ -4,13 +4,14 @@ The final mandatory part of the project focuses on deploying an application base
 
 ![p3_diagram.png](../image_readme/p3_diagram.png)
 
+**K3d** is a tool allowing us to create **local Kubernetes clusters** inside Docker containers using K3s.
+
 ## Table of Contents
 
 - [Overview](#overview)
 - [Usage](#usage)
 - [Continuous Integration (CI)](#continuous-integration-ci)
-- [Continuous developpement using Argo CD](#continuous-deployment-cd-with-argo-cd)
-- [About K3d](#about-k3d)
+- [Continuous Deployment (CD) with Argo CD](#continuous-deployment-cd-with-argo-cd)
 - [Scripts](#scripts)
   - [argocd_init.sh](#argocd_init.sh)
   - [setup_k3d_cluster.sh](#setup_k3d_cluster.sh)
@@ -93,8 +94,6 @@ This will:
 **Continuous Deployment (CD)** means that the application is **automatically deployed after each validated change** in the source code. In this project, this is handled by Argo CD which is  a GitOps tool designed for Kubernetes.
 
 **GitOps** is a development practice where **Git acts as the single source of truth** for both application code and infrastructure configuration. Thereby, the desired stat of the system is stored in a Git repository and the **GitOps** tools **Argo CD** continuously watches this repository. When a change is detected in this repository, the cluster is **automatically updated**.
-
-## About K3d
 
 # Scripts
 
