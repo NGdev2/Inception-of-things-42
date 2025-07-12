@@ -8,9 +8,9 @@ The final mandatory part of the project focuses on deploying an application base
 
 - [Overview](#overview)
 - [Usage](#usage)
+- [Continuous Integration (CI)](#continuous-integration-ci)
+- [Continuous developpement using Argo CD](#continuous-deployment-cd-with-argo-cd)
 - [About K3d](#about-k3d)
-- [About Argo CD](#about-argo-cd)
-- [About continuous integration](#about-continuous-integration)
 - [Scripts](#scripts)
   - [argocd_init.sh](#argocd_init.sh)
   - [setup_k3d_cluster.sh](#setup_k3d_cluster.sh)
@@ -84,85 +84,34 @@ This will:
 - Delete the K3d cluster
 - Remove dangling containers
 
----
+## Continuous Integration (CI)
 
-## 📦 Components & Ports
+**Continuous Integration (CI)** is a development practice where code changes from multiple developers are automatically built, tested, and validated each time they are committed to a shared repository. The main objective is to detect errors early and ensure that the code base remains stable and reduce integration problems. Instead of waiting until the end of a development cycle to merge features, which often leads to conflicts and lots of debugging, CI encourages small and regular updates that are automatically verified. This fosters a faster development pace, better collaboration and higher software quality.
 
-| Component       | Namespace | Service Name     | Local Port | Cluster Port | Target (Pod) Port | Description                          |
-|----------------|-----------|------------------|------------|---------------|-------------------|--------------------------------------|
-| Argo CD        | argocd    | argocd-server     | `8082`     | `443`         | N/A               | Web UI via HTTPS                     |
-| ftegan-app     | dev       | ftegan-app        | `8088`     | `80`          | `8888`            | Playground app inside container      |
+## Continuous Deployment (CD) with Argo CD
 
----
+## About K3d
 
-## 🔁 Port Flow Explanation
+# Scripts
 
-### Diagram for `ftegan-app`:
+## setup_k3d_cluster.sh
 
-```
-Your PC
- └─> localhost:8088
-       └─> port-forward
-             └─> K8s Service ftegan-app:80
-                   └─> Pod:8888 (container app port)
+This script installs the few environment requirements of the project : Docker, K3d, kubectl from Kubernetes and Argo CD.  As required by the subject, creates two namespaces :
+
+```bash
+echo -e "${GREEN}Creating namespaces...${RESET}"
+kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
 ```
 
----
+## argocd_init.sh
 
-## 🔧 Port Roles Explained
+## reset_k3d_env.sh
 
-| Term              | Example     | Role / Explanation                                                                 |
-|-------------------|-------------|-------------------------------------------------------------------------------------|
-| `containerPort`   | `8888`      | Internal port of the container (defined in the Docker image or app code).          |
-| `targetPort`      | `8888`      | Port that **K8s Service** forwards to inside the pod. Usually same as containerPort. |
-| `port` (Service)  | `80`        | Port **within the cluster** that the service exposes. Can be anything.             |
-| `nodePort`        | `30000+`    | (Optional) Port to expose service **outside cluster** without port-forwarding.     |
-| `kubectl port-forward` | `8088:80` | Maps a **local port** (8088) to a **cluster service port** (80).               |
+## argocd-app.yaml
 
----
-Explanation
----
-bash ./setup_k3d_cluster.sh
-bash ./argocd_init.sh
----
+# Resources
 
-if (problem=ports, kubeconfig or version of packages) -> bash ./cleanup.sh -> reinitialize
-it launchs app by given in repository url of argocd-app.yaml. for accessing from Host PC, we need to launch portforwarding
-to understand which port we need to ping we can use that command
-kubectl describe svc ftegan-app -n dev
-we will see "port" 80. it means that our ftegan-app expose that port for communicate with it
-
-command for port forwarding
----
-kubectl port-forward svc/ftegan-app -n dev 8088:80
----
-now we can see our app by url 127.0.0.1:8088
-
-
-host machine expose port 8088 -> service of deployment app expose port 80 -> deployment ftegan-app expose port 8888
-
-
-Service determine who can connect to deployment by 2 criteries: port (80) and selector that should match to pod label:
-selector:
-  app: ftegan-app (file service.yaml)
-
-Selector create filter for access permission
-
-deployment determine labels that pods and containers will inherit
-spec:
-  template:
-    metadata:
-      labels:
-        app: ftegan-app 
-(deployment.yaml)
-
-pods created by deployment will have app=ftegan-app
-example:
-kubectl get pods -n dev --show-labels
-NAME                          READY   STATUS    RESTARTS      AGE    LABELS
-ftegan-app-7b6d6fd56f-btwrl   1/1     Running   7 (68m ago)   4d4h   app=ftegan-app,pod-template-hash=7b6d6fd56f
-
-so services are created to expose ports and provide stable access to pods
-deployments is an object that creates and manages pods, maintain desired number of replicas, verify their status, restarts them if needs, updates pods (and delete outdated) or rolled out
-
-
+- **ArgoCD - Read the docs :** https://argo-cd.readthedocs.io/en/stable/
+- **What is CI/CD - RedHat :** https://www.redhat.com/en/topics/devops/what-is-ci-cd
+- **GitOps - Redhat :** https://www.redhat.com/fr/topics/devops/what-is-gitops
