@@ -17,7 +17,7 @@ To **launch the virtual machine** using **Vagrant**, run :
 cd p1
 
 # Start the Vagrant environment
-vagrant up
+vagrant up  --provider=virtualbox
 ```
 
 **You can then SSH into the VMs :** 

@@ -90,6 +90,10 @@ This will:
 
 ## Continuous Deployment (CD) with Argo CD
 
+**Continuous Deployment (CD)** means that the application is **automatically deployed after each validated change** in the source code. In this project, this is handled by Argo CD which is  a GitOps tool designed for Kubernetes.
+
+**GitOps** is a development practice where **Git acts as the single source of truth** for both application code and infrastructure configuration. Thereby, the desired stat of the system is stored in a Git repository and the **GitOps** tools **Argo CD** continuously watches this repository. When a change is detected in this repository, the cluster is **automatically updated**.
+
 ## About K3d
 
 # Scripts
