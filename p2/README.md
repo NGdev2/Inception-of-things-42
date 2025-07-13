@@ -39,14 +39,13 @@ vagrant up
 vagrant ssh lduheronS
 ```
 
-
 ## Vagrantfile
 
 This Vagrantfile declares a **single-node K3s cluster**. It uses the same setup options as the `p1/Vagrantfile`, described in `p1/README.md`.
 
 ## Ingress
 
-Ingress is an API object that manages external access to the services in a cluster, typically HTTP.
+An Ingress is a Kubernetes resource that defines rules for accessing services within the cluster from the outside over HTTP or HTTPS. It acts as an entry point and manages external access to the applications running inside the Kubernetes cluster.
 
 # Resources
 
