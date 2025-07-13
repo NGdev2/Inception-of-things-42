@@ -53,3 +53,4 @@ An Ingress is a Kubernetes resource that defines rules for accessing services wi
 - **Kubernetes - Ingress documentation :** https://kubernetes.io/docs/concepts/services-networking/ingress/
 - **Kubernetes - Services, load balancing and networking :** https://kubernetes.io/docs/concepts/services-networking/
 - **K3s cluster using vagrant :** https://medium.com/@dharsannanantharaman/create-a-high-availabilty-lightweight-kubernetes-k3s-cluster-using-vagrant-822a1e025855
+- **Maitriser les ingress Kubernetes - Stephane Robert : ** https://blog.stephane-robert.info/docs/conteneurs/orchestrateurs/kubernetes/ingress/ 

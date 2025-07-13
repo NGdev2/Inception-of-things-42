@@ -43,3 +43,7 @@ kubectl apply -f /vagrant/configs/app3
 kubectl apply -f /vagrant/configs/ingress/ingress.yaml
 
 echo -e "${GREEN}All apps and ingress deployment SUCCEEDED${RESET}"
+
+echo "192.168.56.110 app1.com" | sudo tee -a /etc/hosts
+echo "192.168.56.110 app2.com" | sudo tee -a /etc/hosts
+echo "192.168.56.110 app3.com" | sudo tee -a /etc/hosts
