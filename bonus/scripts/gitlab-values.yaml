@@ -1,0 +1,33 @@
+global:
+  edition: ce
+  hosts:
+    domain: 172.17.0.1.nip.io
+    gitlab:
+      name: gitlab.172.17.0.1.nip.io
+    https: false
+    externalHttpPort: 8080
+  ingress:
+    class: traefik
+    enabled: true
+    configureCertmanager: false
+    tls:
+      enabled: false
+  initialRootPassword:
+    secret: gitlab-root-password
+    key: password
+
+minio:
+  replicas: 1
+postgresql:
+  install: true
+redis:
+  replicas: 1
+gitlab:
+  webservice:
+    replicas: 1
+  sidekiq:
+    replicas: 1
+  gitaly:
+    replicas: 1
+registry:
+  replicas: 1
