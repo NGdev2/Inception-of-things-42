@@ -33,3 +33,13 @@ done
 
 # for test purposes, we copy the kubeconfig file to the mounted folder
 sudo chown vagrant:vagrant /etc/rancher/k3s/k3s.yaml
+
+# apply deployment and services of each app
+kubectl apply -f /vagrant/configs/app1
+kubectl apply -f /vagrant/configs/app2
+kubectl apply -f /vagrant/configs/app3
+
+# apply ingress
+kubectl apply -f /vagrant/configs/ingress/ingress.yaml
+
+echo -e "${GREEN}All apps and ingress deployment SUCCEEDED${RESET}"
