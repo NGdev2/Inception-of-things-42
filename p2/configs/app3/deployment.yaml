@@ -2,9 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: app3
-  namespace:
-  labels:
-    app: app3
 spec:
   replicas: 1
   selector:
@@ -16,10 +13,10 @@ spec:
         app: app3
     spec:
       containers:
-      - name: app3
+      - name: hello-kubernetes
         image: paulbouwer/hello-kubernetes:1.10
         ports:
         - containerPort: 80
-    env:
-    - name: MESSAGE
-    - value: "Hello from app3."
+        env:
+        - name: MESSAGE
+          value: "Hello from app3."
