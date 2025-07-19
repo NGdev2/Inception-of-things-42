@@ -1,0 +1,37 @@
+stages:
+  - build
+  - deploy
+# This defines two pipeline stages:
+
+# build: This stage builds the Docker image.
+# deploy: This stage deploys the application to Kubernetes.
+
+variables:
+  IMAGE_TAG: aidarngdev/ftegan:v3
+  # IMAGE_TAG: aidarngdev/ftegan:$CI_COMMIT_REF_NAME # Use branch name as image tag
+
+# Build and push Docker image
+build-image:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker info
+  script:
+    - docker build -t $IMAGE_TAG .
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker push $IMAGE_TAG
+  only:
+    - main
+
+# Deploy to Kubernetes using kubectl
+deploy-to-k8s:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  script:
+    - echo "$KUBECONFIG" > kubeconfig.yaml
+    - export KUBECONFIG=$(pwd)/kubeconfig.yaml
+    - kubectl apply -f configs/
+  only:
+    - main
