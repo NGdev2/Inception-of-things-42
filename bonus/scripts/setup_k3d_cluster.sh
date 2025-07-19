@@ -6,7 +6,7 @@ RED="\033[31m"
 YELLOW="\033[33m"
 RESET="\033[0m"
 
-echo -e "${GREEN}Starting environment setup for bonus...${RESET}"
+echo -e "${GREEN}Starting environment setup...${RESET}"
 
 echo -e "${GREEN}Updating system and installing curl...${RESET}"
 sudo apt-get update -y
@@ -20,12 +20,14 @@ else
   echo -e "${YELLOW}Docker is already installed — skipping.${RESET}"
 fi
 
+
 if ! command -v k3d &> /dev/null; then
   echo -e "${GREEN}Installing K3d...${RESET}"
   curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 else
   echo -e "${YELLOW}K3d is already installed — skipping.${RESET}"
 fi
+
 
 if ! command -v kubectl &> /dev/null; then
   echo -e "${GREEN}Installing kubectl...${RESET}"
@@ -36,27 +38,25 @@ else
   echo -e "${YELLOW}kubectl is already installed — skipping.${RESET}"
 fi
 
+
 CLUSTER_NAME=fteganS
 
 if k3d cluster list | grep -q "$CLUSTER_NAME"; then
   echo -e "${YELLOW}Cluster '$CLUSTER_NAME' already exists — skipping creation.${RESET}"
 else
-  echo -e "${GREEN}Creating K3d cluster named '$CLUSTER_NAME' with port mappings for ingress...${RESET}"
-  k3d cluster create $CLUSTER_NAME \
-  --servers-memory 4G \
-  --agents-memory 2G \
-  -p "8080:80@loadbalancer" \
-  -p "8443:443@loadbalancer" \
-  --volume /var/run/docker.sock:/var/run/docker.sock
+  echo -e "${GREEN}Creating K3d cluster named '$CLUSTER_NAME'...${RESET}"
+  k3d cluster create $CLUSTER_NAME
 fi
 
-echo -e "${GREEN}Creating namespaces (including gitlab)...${RESET}"
+
+echo -e "${GREEN}Creating namespaces...${RESET}"
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
-kubectl create namespace gitlab --dry-run=client -o yaml | kubectl apply -f -
+
 
 echo -e "${GREEN}Installing Argo CD into the 'argocd' namespace...${RESET}"
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
 
 echo -e "${GREEN}Exporting KUBECONFIG for current session...${RESET}"
 export KUBECONFIG=$(k3d kubeconfig write $CLUSTER_NAME)
@@ -64,4 +64,7 @@ echo -e "${YELLOW}KUBECONFIG is set for this session.${RESET}"
 echo -e "${YELLOW}To make it permanent, add the following to your ~/.bashrc or ~/.zshrc:${RESET}"
 echo -e "${YELLOW}export KUBECONFIG=\$(k3d kubeconfig write $CLUSTER_NAME)${RESET}"
 
-echo -e "${GREEN}✅ Environment setup for bonus complete! Run setup_gitlab.sh next.${RESET}"
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d > argocd-password.txt
+echo -e "${GREEN}Argo CD is installed! You can access it via kubectl port-forward.${RESET}"
+
+echo -e "${GREEN}✅ Environment setup complete!${RESET}"

@@ -45,4 +45,6 @@ else
   echo -e "${YELLOW}✅ No leftover Docker containers to remove.${RESET}"
 fi
 
+rm -f argocd-password.txt 2>/dev/null || true
+
 echo -e "${GREEN}✅ K3d environment successfully reset.${RESET}"
