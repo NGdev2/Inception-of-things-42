@@ -47,9 +47,11 @@ This Vagrantfile declares a **single-node K3s cluster**. It uses the same setup 
 
 An Ingress is a Kubernetes resource that defines rules for accessing services within the cluster from the outside over HTTP or HTTPS. It acts as an entry point and manages external access to the applications running inside the Kubernetes cluster.
 
+![ingress_schema.png](../image_readme/ingress_schema.png)
+
 ## server.sh
 
-The [`server.sh`](http://server.sh) script sets up a **single-node K3s cluster**, meaning there is only a **K3s agent** and no **K3s agent node**. This setup is done the same way as the server in part 1.
+The `server.sh` script sets up a **single-node K3s cluster**, meaning there is only a **K3s agent** and no **K3s agent node**. This setup is done the same way as the server in part 1.
 
 Once the cluster is created, the script **applies the Kubernetes manifests** for each application. 
 
