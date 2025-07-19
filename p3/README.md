@@ -77,7 +77,7 @@ Watch for updated replicas, deployments and pods.
 To **clean** everything up and **reset the environment :**
 
 ```bash
-./cleanup.sh
+./reset_k3d_env.sh
 ```
 
 This will:
