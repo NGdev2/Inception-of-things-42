@@ -47,6 +47,34 @@ This Vagrantfile declares a **single-node K3s cluster**. It uses the same setup 
 
 An Ingress is a Kubernetes resource that defines rules for accessing services within the cluster from the outside over HTTP or HTTPS. It acts as an entry point and manages external access to the applications running inside the Kubernetes cluster.
 
+## server.sh
+
+The [`server.sh`](http://server.sh) script sets up a **single-node K3s cluster**, meaning there is only a **K3s agent** and no **K3s agent node**. This setup is done the same way as the server in part 1.
+
+Once the cluster is created, the script **applies the Kubernetes manifests** for each application. 
+
+Applying these manifests means that Kubernetes creates the necessary resources (like pods, deployments and services) to run the apps inside the cluster.
+
+Applying the ingress configuration sets up routing rules so external requests to certain domain names are directed to the correct applications inside the cluster.
+
+```bash
+# apply deployment and services of each app
+kubectl apply -f /vagrant/configs/app1
+kubectl apply -f /vagrant/configs/app2
+kubectl apply -f /vagrant/configs/app3
+
+# apply ingress
+kubectl apply -f /vagrant/configs/ingress/ingress.yaml
+```
+
+Finally, the script adds entries to the `/etc/hosts` file on the host machine. This **associates the IP address** of the K3s server node with the **domain names** of the applications. 
+
+```bash
+echo "192.168.56.110 app1.com" | sudo tee -a /etc/hosts
+echo "192.168.56.110 app2.com" | sudo tee -a /etc/hosts
+echo "192.168.56.110 app3.com" | sudo tee -a /etc/hosts
+```
+
 # Resources
 
 - **Kubernetes - Cluster networking :** https://kubernetes.io/docs/concepts/cluster-administration/networking/

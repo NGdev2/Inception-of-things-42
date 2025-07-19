@@ -14,7 +14,7 @@ echo -e "${GREEN}APT UPDATE AND INSTALLATION OF CURL SUCCEEDED${RESET}"
 # giving the kubeconfig (/etc/rancher/k3s/k3s.yaml) file permissions to 644.
 # https://docs.k3s.io/installation/configuration/#configuration-file
 if curl -sfL https://get.k3s.io | \
-  INSTALL_K3S_EXEC="--node-ip 192.168.56.110 --tls-san serverS" \
+  INSTALL_K3S_EXEC="--node-ip 192.168.56.110 --tls-san lduheronS" \
   K3S_KUBECONFIG_MODE="644" \
   sh -; then
     echo -e "${GREEN}K3s MASTER installation SUCCEEDED${RESET}"

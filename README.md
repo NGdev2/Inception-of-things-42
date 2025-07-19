@@ -22,7 +22,7 @@ Once you've followed the setup instructions for a given part, you can use `kubec
 
 ## About Kubernetes
 
-**Kubernetes (K8s)** is an open-source tool developed by Google that automates the deployment, scaling, and management of containerized applications. It handles updates, monitors application health, and restarts them if they fail. Kubernetes provides a robust framework for **running distributed systems reliably and efficiently.**
+**Kubernetes (K8s)** is an open-source tool developed by Google that automates the deployment, scaling and management of containerized applications. It handles updates, monitors application health and restarts them if they fail. Kubernetes provides a robust framework for **running distributed systems reliably and efficiently.**
 
 ## I. K3s and Vagrant
 
@@ -32,7 +32,7 @@ The first part of this project requires to set-up two machines writing a **Vagra
 
 **Vagrant** is a tool that simplifies the **creation** and **management of virtual machines.**
 
-Configuration is done through a **Vagrantfile** : it is a **configuration file** that defines the machine's operating system, installed software, network configuration, and more.
+Configuration is done through a **Vagrantfile** : it is a **configuration file** that defines the machine's operating system, installed software, network configuration and more.
 
 ### About K3s
 

@@ -98,7 +98,7 @@ Additionally, for the worker node, we implement a **trigger** mechanism that wai
 
 ### **Detailed explanation of the script**
 
-The `Vagrantfile` uses the `ubuntu/bionic64` Vagrant box which is an official Ubuntu 18.04 LTS image for 64-bit systems. This version is selected because it is stable, lightweight, and compatible with K3s. It does not include a graphical interface, which makes it faster to boot and consume fewer system resources. The box is also fully configured for Vagrant: SSH access is preconfigured and the system includes the necessary settings to work seamlessly with Vagrant's provisioning and networking features.
+The `Vagrantfile` uses the `ubuntu/bionic64` Vagrant box which is an official Ubuntu 18.04 LTS image for 64-bit systems. This version is selected because it is stable, lightweight and compatible with K3s. It does not include a graphical interface, which makes it faster to boot and consume fewer system resources. The box is also fully configured for Vagrant: SSH access is preconfigured and the system includes the necessary settings to work seamlessly with Vagrant's provisioning and networking features.
 
 ```
 VAGRANT_BOX = "ubuntu/bionic64"
@@ -124,7 +124,7 @@ Vagrant.configure("2") do |config|
 
 After the initial configuration, a helper function called `define_node` is declared. Its purpose is to define and configure a virtual machine based on the provisioning script passed as an argument. It is either `server.sh` for the K3s server or `serverWorker.sh` for a K3s agent.
 
-The function accepts parameters such as the VM's hostname, IP address, and the path to the provisioning script. Additionally, if the `with_token_trigger` flag is set to `true`, the function sets up a trigger that causes the VM to wait until the file `/vagrant/token.env` is present and non-empty before running the script. This ensures that the agent nodes only attempt to join the cluster after the server has generated the necessary token.
+The function accepts parameters such as the VM's hostname, IP address and the path to the provisioning script. Additionally, if the `with_token_trigger` flag is set to `true`, the function sets up a trigger that causes the VM to wait until the file `/vagrant/token.env` is present and non-empty before running the script. This ensures that the agent nodes only attempt to join the cluster after the server has generated the necessary token.
 
 This mechanism is specifically used for provisioning the K3s agent node which needs to join an existing K3s server using the token.
 
