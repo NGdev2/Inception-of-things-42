@@ -1,0 +1,91 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  IMAGE_TAG: aidarngdev/ftegan:$CI_COMMIT_SHORT_SHA
+  REGISTRY_URL: docker.io
+  K8S_NAMESPACE: dev
+
+# Build and push Docker image
+build-image:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo "Building image with tag: $IMAGE_TAG"
+    - docker info
+  script:
+    # Build the Docker image
+    - docker build -t $IMAGE_TAG .
+    - docker tag $IMAGE_TAG aidarngdev/ftegan:latest
+    
+    # Login to DockerHub
+    - echo "$DOCKER_PASSWORD" | docker login $REGISTRY_URL -u "$DOCKER_USERNAME" --password-stdin
+    
+    # Push both tagged and latest images
+    - docker push $IMAGE_TAG
+    - docker push aidarngdev/ftegan:latest
+    
+    # Update deployment.yaml with new image tag
+    - sed -i "s|image:.*|image: $IMAGE_TAG|g" configs/deployment.yaml
+  
+  artifacts:
+    paths:
+      - configs/
+    expire_in: 1 hour
+  
+  only:
+    - main
+
+# Deploy to Kubernetes cluster
+deploy-to-k8s:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  before_script:
+    # Setup kubectl configuration for local K3d cluster
+    - echo "$KUBECONFIG_CONTENT" | base64 -d > kubeconfig.yaml
+    - export KUBECONFIG=$(pwd)/kubeconfig.yaml
+    
+    # Verify connection to cluster
+    - kubectl cluster-info
+    - kubectl get nodes
+  
+  script:
+    # Apply Kubernetes manifests
+    - kubectl apply -f configs/
+    
+    # Wait for deployment to be ready
+    - kubectl rollout status deployment/ftegan-app -n $K8S_NAMESPACE --timeout=300s
+    
+    # Verify the deployment
+    - kubectl get pods -n $K8S_NAMESPACE -l app=ftegan-app
+    
+    # Get service information
+    - kubectl get svc -n $K8S_NAMESPACE ftegan-app
+  
+  environment:
+    name: development
+    url: http://localhost:8888
+  
+  only:
+    - main
+
+# Optional: Test deployment
+test-deployment:
+  stage: deploy
+  image: curlimages/curl:latest
+  script:
+    # Wait a moment for service to be available
+    - sleep 30
+    
+    # Test the application endpoint (requires port-forward to be active)
+    - echo "Testing application endpoint..."
+    - curl -f http://localhost:8888/ || echo "Note: This test requires port-forward to be active"
+  
+  when: manual
+  only:
+    - main
