@@ -97,7 +97,10 @@ kubectl get namespaces
 kubectl get pods -n argocd
 
 # 2. Initialize ArgoCD when pods are Running
-./improved_argocd_init.sh
+./argocd_init.sh
+
+# # Apply ArgoCD app: kubectl apply -f argocd-gitlab-app.yaml"
+# kubectl apply -f argocd-gitlab-app.yaml
 
 # 3. Verify ArgoCD access
 # URL: https://localhost:8082
@@ -182,28 +185,28 @@ spec:
 docker inspect gitlab-ce | grep IPAddress
 
 # 2. Create ArgoCD application
-cat > argocd-gitlab-app.yaml << 'EOF'
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: ftegan-app-gitlab
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: 'http://172.17.0.2/root/ftegan.git'  # Use GitLab container IP
-    path: configs
-    targetRevision: main
-  destination:
-    server: 'https://kubernetes.default.svc'
-    namespace: dev
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-EOF
+# cat > argocd-gitlab-app.yaml << 'EOF'
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: ftegan-app-gitlab
+#   namespace: argocd
+# spec:
+#   project: default
+#   source:
+#     repoURL: 'http://172.17.0.2/root/ftegan.git'  # Use GitLab container IP
+#     path: configs
+#     targetRevision: main
+#   destination:
+#     server: 'https://kubernetes.default.svc'
+#     namespace: dev
+#   syncPolicy:
+#     automated:
+#       prune: true
+#       selfHeal: true
+#     syncOptions:
+#       - CreateNamespace=true
+# EOF
 
 # 3. Apply ArgoCD application
 kubectl apply -f argocd-gitlab-app.yaml

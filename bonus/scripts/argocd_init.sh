@@ -177,31 +177,6 @@ if [ $login_attempts -eq $max_login_attempts ]; then
     echo -e "${YELLOW}⚠️  Could not login to ArgoCD CLI automatically, but you can login manually later${RESET}"
 fi
 
-# Create ArgoCD application for GitLab (template)
-echo -e "${GREEN}📝 Creating ArgoCD application template for GitLab...${RESET}"
-cat > argocd-gitlab-app.yaml << 'EOF'
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: ftegan-app-gitlab
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: 'http://gitlab-webservice-default.gitlab.svc.cluster.local:8181/root/ftegan.git'
-    path: configs
-    targetRevision: main
-  destination:
-    server: 'https://kubernetes.default.svc'
-    namespace: dev
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-EOF
-
 echo -e "${GREEN}✅ ArgoCD initialization complete!${RESET}"
 echo ""
 echo -e "${BLUE}📋 ArgoCD Access Information:${RESET}"
@@ -210,9 +185,10 @@ echo -e "  • Username: admin"
 echo -e "  • Password: $ARGOCD_PASSWORD"
 echo ""
 echo -e "${YELLOW}📝 Next Steps:${RESET}"
-echo -e "  1. Access ArgoCD at https://localhost:8082"
-echo -e "  2. After GitLab setup, apply: kubectl apply -f argocd-gitlab-app.yaml"
-echo -e "  3. Configure ArgoCD to sync with your GitLab repository"
+echo -e "  1. Start GitLab: ./start_gitlab_ce_docker.sh"
+echo -e "  2. Create GitLab project and upload configs"
+echo -e "  3. Apply ArgoCD app: kubectl apply -f argocd-gitlab-app.yaml"
+echo -e "  4. Access ArgoCD at https://localhost:8082"
 echo ""
 echo -e "${GREEN}🔧 Useful Commands:${RESET}"
 echo -e "  • List apps: argocd app list"
