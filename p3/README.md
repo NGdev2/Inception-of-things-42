@@ -70,14 +70,14 @@ Then monitor the Kubernetes resources as Argo CD automatically redeploys the app
 kubectl get all -n dev
 ```
 
-Watch for updated replicas, deployments, and pods.
+Watch for updated replicas, deployments and pods.
 
 ### Clean
 
 To **clean** everything up and **reset the environment :**
 
 ```bash
-./cleanup.sh
+./reset_k3d_env.sh
 ```
 
 This will:
@@ -87,7 +87,7 @@ This will:
 
 ## Continuous Integration (CI)
 
-**Continuous Integration (CI)** is a development practice where code changes from multiple developers are automatically built, tested, and validated each time they are committed to a shared repository. The main objective is to detect errors early and ensure that the code base remains stable and reduce integration problems. Instead of waiting until the end of a development cycle to merge features, which often leads to conflicts and lots of debugging, CI encourages small and regular updates that are automatically verified. This fosters a faster development pace, better collaboration and higher software quality.
+**Continuous Integration (CI)** is a development practice where code changes from multiple developers are automatically built, tested and validated each time they are committed to a shared repository. The main objective is to detect errors early and ensure that the code base remains stable and reduce integration problems. Instead of waiting until the end of a development cycle to merge features, which often leads to conflicts and lots of debugging, CI encourages small and regular updates that are automatically verified. This fosters a faster development pace, better collaboration and higher software quality.
 
 ## Continuous Deployment (CD) with Argo CD
 

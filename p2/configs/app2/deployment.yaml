@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: app2
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: app2
@@ -16,7 +16,7 @@ spec:
       - name: hello-kubernetes
         image: paulbouwer/hello-kubernetes:1.10
         ports:
-        - containerPort: 80
+        - containerPort: 8080
         env:
         - name: MESSAGE
           value: "Hello from app2."

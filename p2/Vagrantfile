@@ -1,6 +1,6 @@
 VAGRANT_BOX = "ubuntu/bionic64"
-MEMORY = 1024
-CPUS = 1
+MEMORY = 4096
+CPUS = 4
 NETWORK = "192.168.56.110"
 HOSTNAME = "lduheronS"
 
