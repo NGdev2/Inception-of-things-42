@@ -70,6 +70,9 @@ docker rmi -f $(docker images -aq) 2>/dev/null || true
 echo -e "${YELLOW}💾 Removing ALL Docker volumes...${RESET}"
 docker volume rm $(docker volume ls -q) 2>/dev/null || true
 
+# REMOVE corrupted data (if you don't need to preserve anything)
+sudo rm -rf ~/gitlab-data
+
 # Remove ALL Docker networks (except default ones)
 echo -e "${YELLOW}🌐 Removing ALL custom Docker networks...${RESET}"
 docker network ls --format "{{.ID}} {{.Name}}" | grep -v -E "(bridge|host|none)" | awk '{print $1}' | xargs -r docker network rm 2>/dev/null || true

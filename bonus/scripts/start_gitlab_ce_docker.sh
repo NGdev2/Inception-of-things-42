@@ -14,6 +14,8 @@ if docker ps -a | grep -q gitlab-ce; then
     docker rm gitlab-ce 2>/dev/null || true
 fi
 
+# REMOVE corrupted data (if you don't need to preserve anything)
+sudo rm -rf ~/gitlab-data
 # Create persistent data directory
 mkdir -p ~/gitlab-data/config ~/gitlab-data/logs ~/gitlab-data/data
 
