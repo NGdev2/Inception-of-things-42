@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'http://172.17.0.2/root/ftegan.git'  # Fixed: Use GitLab container IP
+    repoURL: 'http://172.17.0.1:8880/root/ftegan.git' 
     path: configs
     targetRevision: main
   destination:

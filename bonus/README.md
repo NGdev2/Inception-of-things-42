@@ -99,8 +99,8 @@ kubectl get pods -n argocd
 # 2. Initialize ArgoCD when pods are Running
 ./argocd_init.sh
 
-# # Apply ArgoCD app: kubectl apply -f argocd-gitlab-app.yaml"
-# kubectl apply -f argocd-gitlab-app.yaml
+# # Apply ArgoCD app when all services are running
+kubectl apply -f argocd-gitlab-app.yaml
 
 # 3. Verify ArgoCD access
 # URL: https://localhost:8082
@@ -131,16 +131,47 @@ kubectl get secret gitlab-gitlab-initial-root-password -n gitlab -ojsonpath='{.d
 
 #### 5.1 Create GitLab Project
 1. Go to: http://localhost:8880
-2. Login as root
+2. Login as root with password from `gitlab-root-password.txt`
 3. Create new project: "ftegan"
 4. Make it public
 5. Initialize with README
 
-#### 5.2 Upload Configuration Files
-Upload these files to your GitLab project:
+#### 5.2 Setup GitLab CI/CD Variables (Optional for CI/CD pipeline)
+1. Go to your project → Settings → CI/CD
+2. Expand "Variables" section  
+3. Add these variables:
+   - **DOCKER_USERNAME**: Your DockerHub username
+   - **DOCKER_PASSWORD**: Your DockerHub password
+   - **KUBECONFIG_CONTENT**: Run `k3d kubeconfig get fteganS | base64 -w 0` and paste output
 
-**configs/deployment.yaml:**
-```yaml
+#### 5.3 Create Personal Access Token (For Git Operations)
+1. Click your avatar (top right) → Edit Profile
+2. Go to Access Tokens (left sidebar)
+3. Create token with:
+   - **Name**: `git-access`
+   - **Scopes**: ✅ api, ✅ read_repository, ✅ write_repository
+4. **Copy the token** (you'll only see it once!)
+
+#### 5.4 Upload Configuration Files
+
+**Method A: Web Interface (Easier)**
+1. In your GitLab project, click "+" → "New directory"
+2. Create directory: `configs`
+3. Upload files to configs/:
+   - `deployment.yaml`
+   - `service.yaml`
+
+**Method B: Git Clone and Push (Recommended)**
+```bash
+# 1. Clone your GitLab repository
+git clone http://localhost:8880/root/ftegan.git
+cd ftegan
+
+# 2. Create configs directory and add files
+mkdir -p configs
+
+# 3. Create deployment.yaml
+cat > configs/deployment.yaml << 'EOF'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -163,10 +194,10 @@ spec:
         image: aidarngdev/ftegan:v2
         ports:
         - containerPort: 8888
-```
+EOF
 
-**configs/service.yaml:**
-```yaml
+# 4. Create service.yaml
+cat > configs/service.yaml << 'EOF'
 apiVersion: v1
 kind: Service
 metadata:
@@ -180,6 +211,15 @@ spec:
     port: 80
     targetPort: 8888
   type: NodePort
+EOF
+
+# 5. Commit and push changes
+git add .
+git commit -m "Add Kubernetes configuration files"
+git push origin main
+# When prompted:
+# Username: root
+# Password: [paste your personal access token]
 ```
 
 ### Step 6: ArgoCD Integration
@@ -188,29 +228,32 @@ spec:
 # 1. Get GitLab container IP
 docker inspect gitlab-ce | grep IPAddress
 
+GITLAB_IP=$(docker inspect gitlab-ce | grep '"IPAddress"' | head -1 | cut -d'"' -f4)
+echo "GitLab IP: $GITLAB_IP"
+
 # 2. Create ArgoCD application
-# cat > argocd-gitlab-app.yaml << 'EOF'
-# apiVersion: argoproj.io/v1alpha1
-# kind: Application
-# metadata:
-#   name: ftegan-app-gitlab
-#   namespace: argocd
-# spec:
-#   project: default
-#   source:
-#     repoURL: 'http://172.17.0.2/root/ftegan.git'  # Use GitLab container IP
-#     path: configs
-#     targetRevision: main
-#   destination:
-#     server: 'https://kubernetes.default.svc'
-#     namespace: dev
-#   syncPolicy:
-#     automated:
-#       prune: true
-#       selfHeal: true
-#     syncOptions:
-#       - CreateNamespace=true
-# EOF
+cat > argocd-gitlab-app.yaml << 'EOF'
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ftegan-app-gitlab
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'http://$GITLAB_IP/root/ftegan.git  # Use GitLab container IP
+    path: configs
+    targetRevision: main
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+EOF
 
 # 3. Apply ArgoCD application
 kubectl apply -f argocd-gitlab-app.yaml
@@ -262,26 +305,57 @@ curl http://localhost:8888
 # Expected: Different message for v1
 ```
 
-### Test 3: Manual Git Workflow
+### Test 3: Complete Git Workflow with Version Changes
 
 ```bash
-# 1. Clone repository
+# 1. Clone repository (if not already done)
 git clone http://localhost:8880/root/ftegan.git
-
-# 2. Create GitLab Personal Access Token:
-# GitLab → Profile → Access Tokens → Create token
-# Scopes: api, read_repository, write_repository
-
-# 3. Make changes and push
 cd ftegan
-# Edit configs/deployment.yaml
-git add .
-git commit -m "Update version"
-git push origin main
-# Use token as password when prompted
 
-# 4. Watch automatic deployment
+# 2. Make changes to trigger GitOps workflow
+# Edit configs/deployment.yaml - change image tag
+sed -i 's/aidarngdev\/ftegan:v2/aidarngdev\/ftegan:v1/' configs/deployment.yaml
+
+# 3. Commit and push changes
+git add configs/deployment.yaml
+git commit -m "Update application to version v1"
+git push origin main
+# Username: root
+# Password: [your personal access token]
+
+# 4. Watch ArgoCD detect and sync changes automatically
+argocd app get ftegan-app-gitlab
 kubectl get pods -n dev -w
+
+# 5. Verify the version change
+curl http://localhost:8888
+# Expected: Different response showing v1 message
+
+# 6. Change back to v2 to test again
+sed -i 's/aidarngdev\/ftegan:v1/aidarngdev\/ftegan:v2/' configs/deployment.yaml
+git add configs/deployment.yaml
+git commit -m "Update application to version v2"
+git push origin main
+
+# 7. Watch the deployment update again
+kubectl get pods -n dev -w
+curl http://localhost:8888
+```
+
+### Git Authentication Troubleshooting
+
+If you get authentication errors:
+
+```bash
+# Make sure you're using the personal access token as password
+# NOT the GitLab root password
+
+# If you forgot your token, create a new one:
+# GitLab → Profile → Access Tokens → Create new token
+
+# Alternative: Save credentials to avoid repeated prompts
+git config credential.helper store
+# Next git push will save credentials for future use
 ```
 
 ## 🔍 Monitoring and Troubleshooting
@@ -455,5 +529,3 @@ During evaluation, demonstrate:
 ---
 
 **Note**: This bonus task successfully integrates GitLab with the Part 3 environment, creating a complete GitOps workflow suitable for modern DevOps practices.
-
-docker exec -it gitlab-ce cat /etc/gitlab/initial_root_password | tee gitlab-root-password.txt
