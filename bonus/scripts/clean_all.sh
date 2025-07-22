@@ -156,10 +156,10 @@ rm -f argocd-password.txt 2>/dev/null || true
 rm -f gitlab-root-password.txt 2>/dev/null || true
 rm -f gitlab-values-k3d.yaml 2>/dev/null || true
 rm -f gitlab-runner-values.yaml 2>/dev/null || true
-rm -f argocd-gitlab-app.yaml 2>/dev/null || true
+# rm -f argocd-gitlab-app.yaml 2>/dev/null || true
 rm -f kubeconfig.yaml 2>/dev/null || true
-rm -f show_access_info.sh 2>/dev/null || true
-rm -f restart_port_forwarding.sh 2>/dev/null || true
+# rm -f show_access_info.sh 2>/dev/null || true
+# rm -f restart_port_forwarding.sh 2>/dev/null || true
 
 # Remove any leftover mount points
 echo -e "${YELLOW}🔧 Cleaning up mount points...${RESET}"

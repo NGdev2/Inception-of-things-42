@@ -46,8 +46,27 @@ if [ -f "gitlab-root-password.txt" ]; then
     else
         echo -e "  Status: ${RED}❌ Not accessible (check if container is running)${RESET}"
     fi
+elif docker ps | grep -q gitlab-ce; then
+    echo -e "  URL: http://localhost:8880"
+    echo -e "  Username: root"
+    echo -e "  Password: ${YELLOW}Getting password...${RESET}"
+    
+    # Try to get password from container
+    if docker exec gitlab-ce test -f /etc/gitlab/initial_root_password 2>/dev/null; then
+        GITLAB_PASSWORD=$(docker exec gitlab-ce cat /etc/gitlab/initial_root_password | grep 'Password:' | awk '{print $2}' 2>/dev/null || echo "")
+        if [ -n "$GITLAB_PASSWORD" ]; then
+            echo "$GITLAB_PASSWORD" > gitlab-root-password.txt
+            echo -e "  Password: $GITLAB_PASSWORD"
+            echo -e "  Status: ${GREEN}✅ Accessible${RESET}"
+        else
+            echo -e "  Password: ${YELLOW}Use: docker exec -it gitlab-ce cat /etc/gitlab/initial_root_password${RESET}"
+        fi
+    else
+        echo -e "  Password: ${YELLOW}Still initializing...${RESET}"
+    fi
 else
-    echo -e "  ${YELLOW}⚠️ Password file not found${RESET}"
+    echo -e "  ${RED}❌ GitLab container not running${RESET}"
+    echo -e "  ${YELLOW}💡 Start with: ./start_gitlab_ce_docker.sh${RESET}"
 fi
 
 echo ""

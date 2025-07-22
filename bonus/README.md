@@ -117,6 +117,10 @@ kubectl get pods -n argocd
 # 2. Wait for GitLab to initialize (2-3 minutes)
 curl http://localhost:8880
 
+# 2.5 save gitlab password 
+kubectl get secret gitlab-gitlab-initial-root-password -n gitlab -ojsonpath='{.data.password}' | base64 --decode > gitlab-root-password.txt
+
+
 # 3. Access GitLab
 # URL: http://localhost:8880
 # Username: root
@@ -451,3 +455,5 @@ During evaluation, demonstrate:
 ---
 
 **Note**: This bonus task successfully integrates GitLab with the Part 3 environment, creating a complete GitOps workflow suitable for modern DevOps practices.
+
+docker exec -it gitlab-ce cat /etc/gitlab/initial_root_password | tee gitlab-root-password.txt
