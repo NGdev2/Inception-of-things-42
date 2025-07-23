@@ -1,177 +1,77 @@
+# **Overview**
 
-# Bonus Task: GitLab Integration with K3d and ArgoCD
+The bonus part of the project extends **Part 3** by integrating a **local GitLab instance** with the existing **K3d cluster** and **ArgoCD setup**, creating a complete **GitOps workflow**. This implementation demonstrates modern DevOps practices where **GitLab serves as the source of truth** for both application code and deployment configurations.
 
-This bonus task extends Part 3 by integrating a local GitLab instance with the existing K3d cluster and ArgoCD setup, creating a complete GitOps workflow.
 
-## 🎯 Project Overview
+The architecture flow: **GitLab (localhost:8880) → ArgoCD → K3d Cluster → Application (localhost:8888)**
 
-**Architecture:**
-```
-GitLab (localhost:8880) → ArgoCD → K3d Cluster → Application (localhost:8888)
-```
+Unlike the previous parts, this bonus task **runs GitLab locally using Docker** and creates a **dedicated GitLab namespace** for proper resource isolation. The setup maintains all functionality from Part 3 while adding GitLab integration for a production-ready CI/CD pipeline.
 
-**What this demonstrates:**
-- Local GitLab instance integrated with Kubernetes cluster
-- GitOps workflow: changes in GitLab automatically deploy to cluster
-- ArgoCD monitoring GitLab repository for configuration changes
-- Complete CI/CD pipeline infrastructure
+## Table of Contents
+- [Overview](#overview)
+- [Usage](#usage)
+- [GitLab Integration](#gitlab-integration)
+- [GitOps Workflow](#gitops-workflow)
+- [Scripts Explanation](#scripts-explanation)
+  - [setup_k3d_cluster.sh](#setup_k3d_clustersh)
+  - [argocd_init.sh](#argocd_initsh)
+  - [start_gitlab_ce_docker.sh](#start_gitlab_ce_dockersh)
+  - [argocd-gitlab-app.yaml](#argocd-gitlab-appyaml)
+  - [Utility Scripts](#utility-scripts)
+- [Testing and Verification](#testing-and-verification)
+- [Resources](#resources)
 
-## 📋 Prerequisites
+# Usage
 
-- Completed Part 3 successfully (K3d + ArgoCD working)
-- Docker installed and running
-- Sufficient system resources (GitLab is resource-intensive)
-- DockerHub account (optional, for custom images)
+**Prerequisites:** Docker installed and running, sufficient system resources (GitLab is resource-intensive).
 
-## 🚀 Quick Start
+To set up the complete **GitOps environment**, run:
 
-### 1. Complete Environment Setup
 ```bash
-# Clean any previous installations
+cd bonus/scripts
+
+# 1. Clean any previous installations (optional but recommended)
 ./clean_all.sh
 
-# Setup K3d cluster with ArgoCD
+# 2. Setup K3d cluster with ArgoCD
 ./setup_k3d_cluster.sh
 
-# Wait for ArgoCD to be ready (2-5 minutes)
+# 3. Wait for ArgoCD to be ready (2-5 minutes)
 kubectl get pods -n argocd -w
-# Wait until argocd-server pods show "Running"
+# Wait until all argocd-server pods show "Running"
 
-# Initialize ArgoCD properly
+# 4. Initialize ArgoCD properly
 ./argocd_init.sh
-```
 
-### 2. Setup GitLab
-```bash
-# Start GitLab using Docker (simpler and more reliable)
+# 5. Start GitLab using Docker
 ./start_gitlab_ce_docker.sh
 
-# Wait 2-3 minutes for GitLab to initialize
-# Check status: docker inspect --format='{{.State.Health.Status}}' gitlab-ce
-```
-
-### 3. Setup Port Forwarding and Access
-```bash
-# Setup all port forwarding
+# 6. Setup port forwarding for all services
 ./restart_port_forwarding.sh
 
-# Get all access credentials and status
+# 7. Get access credentials and status
 ./show_access_info.sh
 ```
 
-## 📖 Step-by-Step Setup Guide
+**Access the services:**
 
-### Step 1: Environment Preparation
+- **ArgoCD UI:** https://localhost:8082 (admin / check argocd-password.txt)
+- **GitLab UI:** http://localhost:8880 (root / check gitlab-root-password.txt)
+- **Application:** http://localhost:8888
 
-```bash
-# 1. Ensure Docker is running
-sudo systemctl start docker
-sudo systemctl status docker
-
-# 2. Clean previous installations
-./clean_all.sh
-
-# 3. Verify cleanup
-docker ps -a
-k3d cluster list
-```
-
-### Step 2: K3d Cluster Setup
+**Configure GitLab repository:**
 
 ```bash
-# 1. Create K3d cluster with namespaces
-./setup_k3d_cluster.sh
+# 1. Access GitLab at http://localhost:8880
+# 2. Login as root with password from gitlab-root-password.txt
+# 3. Create new project named "ftegan"
+# 4. Clone repository and add configuration files
 
-# 2. Verify cluster is ready
-kubectl get nodes
-kubectl get namespaces
-
-# Expected output:
-# - Namespaces: argocd, dev, default, etc.
-# - Node status: Ready
-```
-
-### Step 3: ArgoCD Initialization
-
-```bash
-# 1. Wait for ArgoCD pods to start
-kubectl get pods -n argocd
-
-# 2. Initialize ArgoCD when pods are Running
-./argocd_init.sh
-
-# # Apply ArgoCD app when all services are running
-kubectl apply -f argocd-gitlab-app.yaml
-
-# 3. Verify ArgoCD access
-# URL: https://localhost:8082
-# Username: admin
-# Password: (check argocd-password.txt)
-```
-
-### Step 4: GitLab Setup
-
-```bash
-# 1. Start GitLab container
-./start_gitlab_ce_docker.sh
-
-# 2. Wait for GitLab to initialize (2-3 minutes)
-curl http://localhost:8880
-
-# 2.5 save gitlab password 
-kubectl get secret gitlab-gitlab-initial-root-password -n gitlab -ojsonpath='{.data.password}' | base64 --decode > gitlab-root-password.txt
-
-
-# 3. Access GitLab
-# URL: http://localhost:8880
-# Username: root
-# Password: (auto-generated, check container logs)
-```
-
-### Step 5: GitLab Project Configuration
-
-#### 5.1 Create GitLab Project
-1. Go to: http://localhost:8880
-2. Login as root with password from `gitlab-root-password.txt`
-3. Create new project: "ftegan"
-4. Make it public
-5. Initialize with README
-
-#### 5.2 Setup GitLab CI/CD Variables (Optional for CI/CD pipeline)
-1. Go to your project → Settings → CI/CD
-2. Expand "Variables" section  
-3. Add these variables:
-   - **DOCKER_USERNAME**: Your DockerHub username
-   - **DOCKER_PASSWORD**: Your DockerHub password
-   - **KUBECONFIG_CONTENT**: Run `k3d kubeconfig get fteganS | base64 -w 0` and paste output
-
-#### 5.3 Create Personal Access Token (For Git Operations)
-1. Click your avatar (top right) → Edit Profile
-2. Go to Access Tokens (left sidebar)
-3. Create token with:
-   - **Name**: `git-access`
-   - **Scopes**: ✅ api, ✅ read_repository, ✅ write_repository
-4. **Copy the token** (you'll only see it once!)
-
-#### 5.4 Upload Configuration Files
-
-**Method A: Web Interface (Easier)**
-1. In your GitLab project, click "+" → "New directory"
-2. Create directory: `configs`
-3. Upload files to configs/:
-   - `deployment.yaml`
-   - `service.yaml`
-
-**Method B: Git Clone and Push (Recommended)**
-```bash
-# 1. Clone your GitLab repository
 git clone http://localhost:8880/root/ftegan.git
 cd ftegan
-
-# 2. Create configs directory and add files
 mkdir -p configs
 
-# 3. Create deployment.yaml
+# Create Kubernetes deployment configuration
 cat > configs/deployment.yaml << 'EOF'
 apiVersion: apps/v1
 kind: Deployment
@@ -197,7 +97,7 @@ spec:
         - containerPort: 8888
 EOF
 
-# 4. Create service.yaml
+# Create Kubernetes service configuration
 cat > configs/service.yaml << 'EOF'
 apiVersion: v1
 kind: Service
@@ -214,219 +114,167 @@ spec:
   type: NodePort
 EOF
 
-# 5. Commit and push changes
+# Commit and push changes
 git add .
 git commit -m "Add Kubernetes configuration files"
 git push origin main
-# When prompted:
-# Username: root
-# Password: [paste your personal access token]
 ```
 
-### Step 6: ArgoCD Integration
+**Apply ArgoCD application to monitor GitLab repository:**
 
 ```bash
-# 1. Get GitLab container IP
-docker inspect gitlab-ce | grep IPAddress
-
-GITLAB_IP=$(docker inspect gitlab-ce | grep '"IPAddress"' | head -1 | cut -d'"' -f4)
-echo "GitLab IP: $GITLAB_IP"
-
-# 2. Create ArgoCD application
-cat > argocd-gitlab-app.yaml << 'EOF'
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: ftegan-app-gitlab
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: 'http://$GITLAB_IP/root/ftegan.git  # Use GitLab container IP
-    path: configs
-    targetRevision: main
-  destination:
-    server: 'https://kubernetes.default.svc'
-    namespace: dev
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-EOF
-
-# 3. Apply ArgoCD application
 kubectl apply -f argocd-gitlab-app.yaml
 ```
 
-### Step 7: Setup Port Forwarding
+**Test the GitOps workflow:**
 
 ```bash
-# Setup all required port forwards
-./restart_port_forwarding.sh
-
-# Or manually:
-kubectl port-forward svc/argocd-server -n argocd 8082:443 &
-kubectl port-forward -n dev svc/ftegan-app 8888:80 &
-
-# Verify port forwards
-lsof -i :8082,8880,8888
+# Edit deployment.yaml in GitLab to change image version
+# ArgoCD will automatically detect and deploy changes
+curl http://localhost:8888
 ```
 
-## 🧪 Testing the Complete Pipeline
+## GitLab Integration
 
-### Test 1: Verify Initial Deployment
+**GitLab** is a comprehensive DevOps platform that provides Git repository management, continuous integration, and continuous deployment capabilities. In this bonus implementation, GitLab serves as the **central source of truth** for application configuration and triggers automated deployments.
+
+The integration works through several key components:
+
+**GitLab CE Docker Container:** A local GitLab Community Edition instance running on port 8880, providing a full-featured Git repository with web interface, user management, and project organization.
+
+**Repository Structure:** The GitLab repository contains Kubernetes manifests in a `configs/` directory, including deployment and service configurations that define how the application should run in the cluster.
+
+**ArgoCD Application:** A specialized ArgoCD application resource that monitors the GitLab repository for changes and automatically syncs the cluster state to match the repository contents.
+
+**Docker Integration:** GitLab runs as a Docker container with persistent data volumes, ensuring that repository data and configurations survive container restarts while maintaining proper isolation from the host system.
+
+## GitOps Workflow
+
+**GitOps** is a modern deployment methodology where **Git repositories serve as the single source of truth** for declarative infrastructure and application configuration. In this implementation, the GitOps workflow operates as follows:
+
+**Developer makes changes:** Modifications to application configuration are made by editing YAML files in the GitLab repository through either the web interface or by cloning, editing, and pushing changes via Git commands.
+
+**GitLab stores the desired state:** The repository maintains the authoritative version of how the application should be deployed, including container images, resource allocations, and service configurations.
+
+**ArgoCD monitors for changes:** The ArgoCD application continuously polls the GitLab repository (using the container's internal IP address) to detect any modifications to the configuration files.
+
+**Automatic synchronization:** When changes are detected, ArgoCD automatically applies the new configuration to the Kubernetes cluster, ensuring that the running application matches the desired state defined in Git.
+
+**Self-healing capabilities:** If manual changes are made directly to the cluster that deviate from the Git repository, ArgoCD can automatically revert these changes to maintain consistency with the source of truth.
+
+This workflow eliminates the need for manual deployments and provides a complete audit trail of all changes through Git history.
+
+## Scripts Explanation
+
+### setup_k3d_cluster.sh
+
+This script establishes the foundation for the entire GitOps environment by installing dependencies and creating the Kubernetes cluster. The script begins by updating the system package list and installing curl, which is required for downloading other components.
+
+The script checks for Docker installation and installs it using the official Docker installation script if not present. It adds the current user to the docker group to enable non-root access to Docker commands.
+
+K3d installation follows using the official installation script from the K3d repository. K3d is chosen because it creates lightweight Kubernetes clusters using K3s inside Docker containers, making it ideal for local development and testing.
+
+The script installs kubectl using the official Kubernetes release, ensuring compatibility with the cluster version. It downloads the latest stable release and installs it in `/usr/local/bin/`.
+
+A K3d cluster named `fteganS` is created, following the naming convention established in previous parts. The script exports the KUBECONFIG environment variable to enable kubectl access to the cluster.
+
+Finally, it creates the necessary namespaces: `argocd` for ArgoCD components and `dev` for application deployment. ArgoCD is installed using the official manifest from the ArgoCD repository.
+
+### argocd_init.sh
+
+This comprehensive script handles ArgoCD initialization with robust error handling and retry logic. The script includes several helper functions to ensure reliable setup.
+
+The `wait_for_pods_ready` function monitors pod status with configurable timeout and check intervals. It waits for pods to reach "Running" status and then verifies they are ready to accept traffic.
+
+The `wait_for_argocd_server` function specifically monitors the ArgoCD server pod, which is critical for the web interface and API access.
+
+The `wait_for_argocd_secret` function waits for the initial admin secret to be created by ArgoCD, which contains the auto-generated password for the admin user.
+
+The script checks if ArgoCD is already installed to avoid duplicate installations. It installs the ArgoCD CLI tool if not present, downloading the latest version from the official GitHub releases.
+
+The admin password is extracted from the Kubernetes secret and saved to `argocd-password.txt` for easy access. Port forwarding is established to make ArgoCD accessible on localhost:8082.
+
+The script includes retry logic for CLI login, as the ArgoCD server may take time to become fully operational even after the pods are running.
+
+### start_gitlab_ce_docker.sh
+
+This script manages GitLab Community Edition deployment using Docker containers. It first checks for existing GitLab containers and removes them to ensure a clean installation.
+
+The script creates persistent data directories for GitLab configuration, logs, and data. Proper ownership is set using the GitLab user ID (998) to ensure the container can access the mounted volumes.
+
+GitLab is deployed using the official `gitlab/gitlab-ce:17.11.6-ce.0` image with specific configuration:
+- **Hostname:** Set to `gitlab.local` for internal resolution
+- **Port mapping:** Container port 80 mapped to host port 8880
+- **Restart policy:** `unless-stopped` ensures automatic restart
+- **Shared memory:** 256MB allocated for GitLab operations
+- **External URL:** Configured to match the local access URL
+
+The container includes volume mounts for persistent data storage, ensuring that GitLab data survives container restarts and updates.
+
+### argocd-gitlab-app.yaml
+
+This ArgoCD Application resource defines how ArgoCD should monitor and sync the GitLab repository. The application specifies the GitLab repository URL using the Docker container's internal IP address (`172.17.0.1:8880`), which allows ArgoCD running inside the Kubernetes cluster to access GitLab running in Docker.
+
+The `path: configs` specification tells ArgoCD to monitor only the configs directory within the repository, where Kubernetes manifests are stored. The `targetRevision: main` ensures ArgoCD tracks the main branch.
+
+The destination configuration points to the local Kubernetes cluster and specifies the `dev` namespace for application deployment.
+
+Automated sync policies are enabled with `prune: true` to remove resources that are no longer defined in Git, and `selfHeal: true` to automatically correct manual changes that deviate from the Git state.
+
+### Utility Scripts
+
+**restart_port_forwarding.sh:** This script manages port forwarding for all services. It kills existing port forwards and establishes new ones for ArgoCD (8082), GitLab (8880), and the application (8888). The script includes checks to ensure services exist before attempting to forward ports.
+
+**show_access_info.sh:** A comprehensive status script that displays access URLs, credentials, and system status. It retrieves passwords from saved files or Docker containers and performs connectivity checks to verify service accessibility.
+
+**clean_all.sh:** A complete cleanup script that removes all components including Docker containers, K3d clusters, kubectl configurations, and generated files. This script ensures a clean environment for fresh installations.
+
+**reset_k3d_env.sh:** A focused cleanup script that removes only K3d and Kubernetes components while preserving Docker installations. Useful for resetting the cluster without affecting the underlying Docker environment.
+
+## Testing and Verification
+
+**Initial Deployment Verification:**
 
 ```bash
-# 1. Check ArgoCD application status
+# Check ArgoCD application status
 argocd app get ftegan-app-gitlab
 
-# 2. Verify pods are running
+# Verify pods are running in dev namespace
 kubectl get pods -n dev
 
-# 3. Test application response
+# Test application response
 curl http://localhost:8888
 # Expected: {"status": "ok", "message": "My ✨Flamboyant✨ app v2🥈"}
 ```
 
-### Test 2: GitOps Workflow
+**GitOps Workflow Testing:**
 
 ```bash
-# 1. Edit deployment.yaml in GitLab
-# Change: image: aidarngdev/ftegan:v2
-# To: image: aidarngdev/ftegan:v1
-
-# 2. Watch ArgoCD detect and sync changes
-argocd app get ftegan-app-gitlab
-kubectl get pods -n dev -w
-
-# 3. Verify version change
-curl http://localhost:8888
-# Expected: Different message for v1
-```
-
-### Test 3: Complete Git Workflow with Version Changes
-
-```bash
-# 1. Clone repository (if not already done)
+# 1. Clone the GitLab repository
 git clone http://localhost:8880/root/ftegan.git
 cd ftegan
 
-# 2. Make changes to trigger GitOps workflow
-# Edit configs/deployment.yaml - change image tag
+# 2. Change application version in deployment.yaml
 sed -i 's/aidarngdev\/ftegan:v2/aidarngdev\/ftegan:v1/' configs/deployment.yaml
 
 # 3. Commit and push changes
 git add configs/deployment.yaml
 git commit -m "Update application to version v1"
 git push origin main
-# Username: root
-# Password: [your personal access token]
 
-# 4. Watch ArgoCD detect and sync changes automatically
+# 4. Watch ArgoCD detect and sync changes
 argocd app get ftegan-app-gitlab
 kubectl get pods -n dev -w
 
-# 5. Verify the version change
+# 5. Verify version change
 curl http://localhost:8888
 # Expected: Different response showing v1 message
-
-# 6. Change back to v2 to test again
-sed -i 's/aidarngdev\/ftegan:v1/aidarngdev\/ftegan:v2/' configs/deployment.yaml
-git add configs/deployment.yaml
-git commit -m "Update application to version v2"
-git push origin main
-
-# 7. Watch the deployment update again
-kubectl get pods -n dev -w
-curl http://localhost:8888
 ```
 
-### Git Authentication Troubleshooting
-
-If you get authentication errors:
+**Complete System Verification:**
 
 ```bash
-# Make sure you're using the personal access token as password
-# NOT the GitLab root password
-
-# If you forgot your token, create a new one:
-# GitLab → Profile → Access Tokens → Create new token
-
-# Alternative: Save credentials to avoid repeated prompts
-git config credential.helper store
-# Next git push will save credentials for future use
-```
-
-## 🔍 Monitoring and Troubleshooting
-
-### Check System Status
-
-```bash
-# ArgoCD status
-kubectl get pods -n argocd
-argocd app list
-
-# GitLab status
-docker ps | grep gitlab-ce
-curl http://localhost:8880
-
-# Application status
-kubectl get all -n dev
-curl http://localhost:8888
-
-# Port forwarding status
-lsof -i :8082,8880,8888
-```
-
-### Common Issues and Solutions
-
-#### ArgoCD Connection Issues
-```bash
-# Restart ArgoCD port forwarding
-pkill -f "port-forward.*argocd"
-kubectl port-forward svc/argocd-server -n argocd 8082:443 &
-
-# Check ArgoCD password
-cat argocd-password.txt
-```
-
-#### GitLab Access Issues
-```bash
-# Check GitLab container
-docker logs gitlab-ce
-
-# Get GitLab root password
-docker exec -it gitlab-ce grep 'Password:' /etc/gitlab/initial_root_password
-```
-
-#### ArgoCD Sync Issues
-```bash
-# Check ArgoCD application status
-argocd app get ftegan-app-gitlab
-
-# Manual sync
-argocd app sync ftegan-app-gitlab
-
-# Check GitLab repository URL
-kubectl get application ftegan-app-gitlab -n argocd -o yaml
-```
-
-#### Application Not Accessible
-```bash
-# Check service and pods
-kubectl get svc,pods -n dev
-
-# Restart application port forwarding
-pkill -f "port-forward.*ftegan"
-kubectl port-forward -n dev svc/ftegan-app 8888:80 &
-```
-
-## 📊 Verification Commands
-
-### Complete System Check
-```bash
+# Check all components
 echo "=== BONUS TASK VERIFICATION ==="
 
 echo "1. K3d Cluster:"
@@ -434,122 +282,26 @@ kubectl get nodes
 
 echo "2. ArgoCD:"
 kubectl get pods -n argocd
-echo "ArgoCD UI: https://localhost:8082"
 
 echo "3. GitLab:"
 docker ps | grep gitlab-ce
-echo "GitLab UI: http://localhost:8880"
 
 echo "4. Application:"
 kubectl get pods -n dev
-echo "App URL: http://localhost:8888"
 curl http://localhost:8888
 
 echo "5. ArgoCD Application:"
 argocd app get ftegan-app-gitlab
-
-echo "6. Port Forwards:"
-lsof -i :8082,8880,8888
 ```
 
-## 🎯 Success Criteria
+The verification demonstrates that changes made in GitLab are automatically detected by ArgoCD and deployed to the Kubernetes cluster, completing the GitOps workflow. The system provides a production-ready CI/CD pipeline suitable for modern DevOps practices.
 
-✅ **GitLab running locally**: http://localhost:8880 accessible  
-✅ **GitLab integrated with cluster**: ArgoCD watching GitLab repository  
-✅ **Dedicated namespace**: All components in correct namespaces  
-✅ **Part 3 functionality**: ArgoCD and application working  
-✅ **GitOps workflow**: Changes in GitLab auto-deploy to cluster  
+# Resources
 
-## 🔧 Utility Scripts
-
-### Restart All Port Forwarding
-```bash
-#!/bin/bash
-pkill -f "port-forward" 2>/dev/null || true
-sleep 2
-kubectl port-forward -n argocd svc/argocd-server 8082:443 &
-kubectl port-forward -n dev svc/ftegan-app 8888:80 &
-echo "Port forwarding restarted"
-```
-
-### Show Access Information
-```bash
-#!/bin/bash
-echo "🎯 BONUS TASK ACCESS INFORMATION"
-echo "ArgoCD: https://localhost:8082 (admin / $(cat argocd-password.txt))"
-echo "GitLab: http://localhost:8880 (root / check container logs)"
-echo "App: http://localhost:8888"
-```
-
-### Complete Cleanup
-```bash
-#!/bin/bash
-# Stop all port forwards
-pkill -f "port-forward"
-
-# Remove GitLab container
-docker stop gitlab-ce
-docker rm gitlab-ce
-
-# Clean K3d cluster
-k3d cluster delete fteganS
-
-# Clean Docker
-docker system prune -f
-```
-
-## 📁 File Structure
-
-```
-bonus/
-├── setup_k3d_cluster.sh          # K3d cluster setup
-├── improved_argocd_init.sh        # ArgoCD initialization
-├── start_gitlab_ce_docker.sh      # GitLab Docker setup
-├── clean_all.sh                   # Complete cleanup
-├── restart_port_forwarding.sh     # Restart port forwards
-├── show_access_info.sh            # Show access credentials
-├── argocd-gitlab-app.yaml         # ArgoCD application config
-└── README.md                      # This guide
-```
-
-## 🏆 Evaluation Demonstration
-
-During evaluation, demonstrate:
-
-1. **Environment Running**: All services accessible via browsers
-2. **GitOps Workflow**: Edit file in GitLab → automatic deployment
-3. **Version Management**: Change image tags and see updates
-4. **Monitoring**: Show ArgoCD sync status and application health
-5. **Integration**: Explain how GitLab connects to K8s via ArgoCD
-
-**Time Estimate**: 
-- Setup: 15-20 minutes
-- Demonstration: 5-10 minutes
-- Total: ~30 minutes
-
----
-
-**Note**: This bonus task successfully integrates GitLab with the Part 3 environment, creating a complete GitOps workflow suitable for modern DevOps practices.
-=======
-## Overview
-
-The bonus section focuses on deploying the third part of the project via **GitLab** pipelines.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Usage](#usage)
-- [About Gitlab](#about-gitlab)
-- [Resources](#resources)
-
-## Usage
-
-## About Gitlab
-
-**GitLab** is a web-based DevOps platform built around Git. The platform helps automate tasks and manage software projects in one place. 
-
-It includes built-in tools for issue tracking, continuous integration (CI) and continuous deployment (CD). It is available in both open-source and commercial editions. The platform is used to automate workflows and manage software projects in one place.
-
-GitLab uses a file named `.gitlab-ci.yml` at the root of the repository to define a set of automated tasks called **pipelines**. These pipelines are triggered every time code is pushed to the repository. The file contains **jobs**, which are individual tasks such as building the project, running tests or deploying it. Jobs are organized into stages, which represent logical steps in the workflow. For example, a pipeline might include a build stage, followed by a test stage and finally a deploy stage. All jobs in a stage are run in parallel and the next stage only starts if all jobs in the current stage succeed. This allows for clear and structured automation of the project’s lifecycle.
-
-## Resources
+- **GitLab Documentation:** https://docs.gitlab.com/
+- **GitLab Docker Images:** https://hub.docker.com/r/gitlab/gitlab-ce
+- **ArgoCD GitOps Guide:** https://argo-cd.readthedocs.io/en/stable/user-guide/application/
+- **K3d Local Development:** https://k3d.io/v5.4.6/
+- **GitOps Principles:** https://www.gitops.tech/
+- **Kubernetes GitOps Workflow:** https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
+- **Docker Container Management:** https://docs.docker.com/engine/reference/run/
